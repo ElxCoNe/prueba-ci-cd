@@ -59,5 +59,5 @@ jobs:
             docker stop prueba-ci-cd || true
             docker rm prueba-ci-cd || true
             docker run -d --name prueba-ci-cd \
-                         -p 8080:8080 \
+                         -p 8085:8080 \
                          ghcr.io/$REPO:latest
