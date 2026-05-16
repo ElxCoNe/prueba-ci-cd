@@ -22,11 +22,8 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-      
-      # ✅ NUEVO: Convertir el nombre del repositorio a minúsculas
       - name: Set lowercase repo
         run: echo "REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -42,19 +39,25 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - name: Set lowercase repo
+        run: echo "REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.9
+        env:
+          REPO: ${{ env.REPO }}
         with:
           host: 157.180.40.190
           username: root
           key: ${{ secrets.SSH_KEY }}
           port: 22
+          envs: REPO
           script: |
             echo "Conexión exitosa al VPS"
-            docker login ghcr.io -u "ElxCoNe" -p ${{ secrets.TOKEN}} 
-            docker pull ghcr.io/${{ github.repository }}:latest
-            docker stop ${{github.event.repository.name}} || true
-            docker rm ${{github.event.repository.name}} || true
-            docker run -d --name ${{ github.event.repository.name }} \
+            docker login ghcr.io -u "ElxCoNe" -p ${{ secrets.TOKEN }}
+            docker pull ghcr.io/$REPO:latest
+            docker stop prueba-ci-cd || true
+            docker rm prueba-ci-cd || true
+            docker run -d --name prueba-ci-cd \
                          -p 8080:8080 \
-                         ghcr.io/${{ github.repository }}:latest
+                         ghcr.io/$REPO:latest
